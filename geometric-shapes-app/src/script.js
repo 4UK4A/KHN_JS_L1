@@ -76,36 +76,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
+
+        // Clear previous results
+        resultDiv.querySelector('.shape-details').textContent = '';
+        resultDiv.querySelector('.calculated-area').textContent = '';
+
         const shapeType = form.elements['shape'].value;
         let shape;
         let shapeDetails = '';
         
         try {
             if (shapeType === 'rectangle') {
-                const width = parseFloat(form.elements['width'].value);
-                const height = parseFloat(form.elements['height'].value);
+                const width = parseFloat(form.elements['rect-width'].value);
+                const height = parseFloat(form.elements['rect-height'].value);
+                if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+                    throw new Error('Please enter valid positive numbers for width and height');
+                }
                 shape = new Rectangle(width, height);
                 shapeDetails = `Rectangle with width: ${width} and height: ${height}`;
             } else if (shapeType === 'circle') {
                 const radius = parseFloat(form.elements['radius'].value);
+                if (isNaN(radius) || radius <= 0) {
+                    throw new Error('Please enter a valid positive number for radius');
+                }
                 shape = new Circle(radius);
                 shapeDetails = `Circle with radius: ${radius}`;
             } else if (shapeType === 'triangle') {
-                const base = parseFloat(form.elements['base'].value);
-                const height = parseFloat(form.elements['height'].value);
+                const base = parseFloat(form.elements['tri-base'].value);
+                const height = parseFloat(form.elements['tri-height'].value);
+                if (isNaN(base) || isNaN(height) || base <= 0 || height <= 0) {
+                    throw new Error('Please enter valid positive numbers for base and height');
+                }
                 shape = new Triangle(base, height);
                 shapeDetails = `Triangle with base: ${base} and height: ${height}`;
             }
 
             if (shape) {
                 const area = ShapeCalculator.calculateArea(shape);
-                
-                // Update result display
                 resultDiv.querySelector('.shape-details').textContent = shapeDetails;
                 resultDiv.querySelector('.calculated-area').textContent = `Area: ${area.toFixed(2)}`;
-                
-                // Save calculation
-                ShapeCalculator.saveInput(shapeType, shape);
                 
                 // Add to history
                 const historyEntry = document.createElement('div');
