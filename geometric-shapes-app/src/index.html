@@ -9,12 +9,29 @@
 <body>
     <div class="container">
         <h1>Geometric Shapes Area Calculator</h1>
+
+        <div class="controls">
+            <input type="text" id="search" placeholder="Search calculations...">
+            <select id="filter-shape">
+                <option value="all">All Shapes</option>
+                <option value="rectangle">Rectangle</option>
+                <option value="circle">Circle</option>
+                <option value="triangle">Triangle</option>
+            </select>
+            <select id="sort-by">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="area-asc">Area (Low to High)</option>
+                <option value="area-desc">Area (High to Low)</option>
+            </select>
+        </div>
+
         <form id="shape-form">
             <label for="shape">Select a shape:</label>
             <select id="shape" name="shape">
                 <option value="rectangle">Rectangle</option>
                 <option value="circle">Circle</option>
-                <option value="triangle">Triangle</option>
+                <option value="triangle">Triangle</option>                
             </select>
 
             <div id="rectangle-params" class="shape-params">
@@ -36,14 +53,15 @@
                 <input type="number" id="tri-height" name="tri-height" min="0" step="any" required>
             </div>
 
-            <div id="result" class="result">
+            
+            <button type="submit">Calculate Area</button>
+        </form>
+        
+        <div id="result" class="result">
                 <div class="shape-details"></div>
                 <div class="calculated-area"></div>
                 <div class="calculation-history"></div>
-            </div>
-
-            <button type="submit">Calculate Area</button>
-        </form>
+        </div>
     </div>
 
     <script src="script.js"></script>

@@ -59,12 +59,80 @@ class ShapeCalculator {
         const data = localStorage.getItem('shapeInputs');
         return data ? JSON.parse(data) : null;
     }
+
+    static calculations = [];
+
+    static addCalculation(shapeType, shape, area) {
+        const calculation = {
+            id: Date.now(),
+            shapeType,
+            shape: {
+                ...shape
+            },
+            area,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Load existing calculations first
+        const calculations = this.loadCalculations();
+        calculations.push(calculation);
+        
+        // Save to localStorage
+        localStorage.setItem('calculations', JSON.stringify(calculations));
+        return calculation;
+    }
+
+    static loadCalculations() {
+        const saved = localStorage.getItem('calculations');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    static filterAndSortCalculations(searchTerm = '', shapeType = 'all', sortBy = 'newest') {
+        const calculations = this.loadCalculations();
+        
+        let filtered = [...calculations];
+
+        // Filter by shape type
+        if (shapeType !== 'all') {
+            filtered = filtered.filter(calc => calc.shapeType === shapeType);
+        }
+
+        // Filter by search term
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(calc => 
+                calc.shapeType.toLowerCase().includes(term) ||
+                calc.area.toString().includes(term)
+            );
+        }
+
+        // Sort calculations
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case 'oldest':
+                    return new Date(a.timestamp) - new Date(b.timestamp);
+                case 'area-asc':
+                    return a.area - b.area;
+                case 'area-desc':
+                    return b.area - a.area;
+                default: // 'newest'
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+            }
+        });
+
+        return filtered;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('shape-form');
     const resultDiv = document.getElementById('result');
     const shapeSelect = document.getElementById('shape');
+
+    const searchInput = document.getElementById('search');
+    const filterShape = document.getElementById('filter-shape');
+    const sortBy = document.getElementById('sort-by');
+    const historyDiv = document.querySelector('.calculation-history');
 
     // Function to hide all parameter inputs and disable their required attribute
     function hideAllParams() {
@@ -136,14 +204,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (shape) {
                 const area = ShapeCalculator.calculateArea(shape);
+                const calculation = ShapeCalculator.addCalculation(shapeType, shape, area);
+                
+                // Update display
                 resultDiv.querySelector('.shape-details').textContent = shapeDetails;
                 resultDiv.querySelector('.calculated-area').textContent = `Area: ${area.toFixed(2)}`;
                 
-                // Add to history
-                const historyEntry = document.createElement('div');
-                historyEntry.textContent = `${shapeDetails} - Area: ${area.toFixed(2)}`;
-                const history = resultDiv.querySelector('.calculation-history');
-                history.insertBefore(historyEntry, history.firstChild);
+                // Reset form
+                form.reset();
+                
+                // Update history display
+                updateHistory();
             }
         } catch (error) {
             resultDiv.querySelector('.calculated-area').textContent = `Error: ${error.message}`;
@@ -152,5 +223,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize with rectangle inputs visible
     document.getElementById('rectangle-params').style.display = 'block';
+
+    function updateHistory() {
+        const filtered = ShapeCalculator.filterAndSortCalculations(
+            searchInput.value,
+            filterShape.value,
+            sortBy.value
+        );
+
+        historyDiv.innerHTML = '';
+        filtered.forEach(calc => {
+            const entry = document.createElement('div');
+            entry.className = 'history-entry';
+            entry.innerHTML = `
+                <span class="shape-type">${calc.shapeType}</span>
+                <span class="area">Area: ${calc.area.toFixed(2)}</span>
+                <span class="timestamp">${new Date(calc.timestamp).toLocaleString()}</span>
+            `;
+            historyDiv.appendChild(entry);
+        });
+    }
+
+    // Load existing calculations
+    ShapeCalculator.loadCalculations();
+    updateHistory();
+
+    // Add event listeners for search, filter, and sort
+    searchInput.addEventListener('input', updateHistory);
+    filterShape.addEventListener('change', updateHistory);
+    sortBy.addEventListener('change', updateHistory);
 });
 

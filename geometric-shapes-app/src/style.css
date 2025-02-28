@@ -86,3 +86,41 @@ button:hover {
     padding-top: 15px;
     border-top: 1px solid #eee;
 }
+
+.controls {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.controls input,
+.controls select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.controls input {
+    width: 200px;
+}
+
+.history-entry {
+    padding: 10px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-entry .shape-type {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.history-entry .timestamp {
+    color: #6c757d;
+    font-size: 0.9em;
+}
