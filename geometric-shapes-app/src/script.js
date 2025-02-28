@@ -66,13 +66,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultDiv = document.getElementById('result');
     const shapeSelect = document.getElementById('shape');
 
-    // Show/hide appropriate input fields based on shape selection
-    shapeSelect.addEventListener('change', () => {
+    // Function to hide all parameter inputs and disable their required attribute
+    function hideAllParams() {
         document.querySelectorAll('.shape-params').forEach(div => {
             div.style.display = 'none';
+            // Disable required attribute for hidden inputs
+            div.querySelectorAll('input').forEach(input => {
+                input.required = false;
+            });
         });
-        document.getElementById(`${shapeSelect.value}-params`).style.display = 'block';
+    }
+
+    // Function to show selected parameter inputs and enable their required attribute
+    function showSelectedParams(shapeType) {
+        const selectedDiv = document.getElementById(`${shapeType}-params`);
+        selectedDiv.style.display = 'block';
+        // Enable required attribute for visible inputs
+        selectedDiv.querySelectorAll('input').forEach(input => {
+            input.required = true;
+        });
+    }
+
+    // Update shape parameters visibility when shape is selected
+    shapeSelect.addEventListener('change', () => {
+        hideAllParams();
+        showSelectedParams(shapeSelect.value);
     });
+
+    // Initial setup - show rectangle params by default
+    hideAllParams();
+    showSelectedParams('rectangle');
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
