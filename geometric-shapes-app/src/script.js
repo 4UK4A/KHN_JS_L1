@@ -70,7 +70,9 @@ class ShapeCalculator {
                 ...shape
             },
             area,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            // Add input values based on shape type
+            inputs: this.getShapeInputValues(shapeType, shape)
         };
         
         // Load existing calculations first
@@ -80,6 +82,19 @@ class ShapeCalculator {
         // Save to localStorage
         localStorage.setItem('calculations', JSON.stringify(calculations));
         return calculation;
+    }
+
+    static getShapeInputValues(shapeType, shape) {
+        switch(shapeType) {
+            case 'rectangle':
+                return `Width: ${shape.width}, Height: ${shape.height}`;
+            case 'circle':
+                return `Radius: ${shape.radius}`;
+            case 'triangle':
+                return `Base: ${shape.base}, Height: ${shape.height}`;
+            default:
+                return '';
+        }
     }
 
     static loadCalculations() {
@@ -121,6 +136,41 @@ class ShapeCalculator {
         });
 
         return filtered;
+    }
+
+    static exportHistory() {
+        const calculations = this.loadCalculations();
+        const jsonString = JSON.stringify(calculations, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `shape-calculations-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    static importHistory(jsonString) {
+        try {
+            const imported = JSON.parse(jsonString);
+            if (!Array.isArray(imported)) {
+                throw new Error('Invalid file format');
+            }
+            
+            // Merge with existing calculations
+            const existing = this.loadCalculations();
+            const merged = [...existing, ...imported];
+            
+            // Save merged calculations
+            localStorage.setItem('calculations', JSON.stringify(merged));
+            return true;
+        } catch (error) {
+            console.error('Import error:', error);
+            return false;
+        }
     }
 }
 
@@ -230,13 +280,14 @@ document.addEventListener('DOMContentLoaded', () => {
             filterShape.value,
             sortBy.value
         );
-
+    
         historyDiv.innerHTML = '';
         filtered.forEach(calc => {
             const entry = document.createElement('div');
             entry.className = 'history-entry';
             entry.innerHTML = `
                 <span class="shape-type">${calc.shapeType}</span>
+                <span class="inputs">${calc.inputs}</span>
                 <span class="area">Area: ${calc.area.toFixed(2)}</span>
                 <span class="timestamp">${new Date(calc.timestamp).toLocaleString()}</span>
             `;
@@ -252,5 +303,68 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('input', updateHistory);
     filterShape.addEventListener('change', updateHistory);
     sortBy.addEventListener('change', updateHistory);
+
+    // Add export button handler
+    const exportBtn = document.getElementById('export-history');
+    exportBtn.addEventListener('click', () => {
+        ShapeCalculator.exportHistory();
+    });
+
+    // Add drag and drop handlers
+    const dropZone = document.getElementById('drop-zone');
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (ShapeCalculator.importHistory(event.target.result)) {
+                    updateHistory();
+                    alert('History imported successfully!');
+                } else {
+                    alert('Error importing history. Please check the file format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // Also allow clicking the drop zone to select a file
+    dropZone.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    if (ShapeCalculator.importHistory(event.target.result)) {
+                        updateHistory();
+                        alert('History imported successfully!');
+                    } else {
+                        alert('Error importing history. Please check the file format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        
+        input.click();
+    });
 });
+
 

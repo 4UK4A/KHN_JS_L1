@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container" >
         <h1>Geometric Shapes Area Calculator</h1>
 
         <div class="controls">
@@ -23,8 +23,13 @@
                 <option value="oldest">Oldest First</option>
                 <option value="area-asc">Area (Low to High)</option>
                 <option value="area-desc">Area (High to Low)</option>
-            </select>
+            </select>            
+            <button id="export-history">Export History</button>
+            
         </div>
+            <div id="drop-zone" class="drop-zone">
+                Drop history file here to import
+            </div>
 
         <form id="shape-form">
             <label for="shape">Select a shape:</label>

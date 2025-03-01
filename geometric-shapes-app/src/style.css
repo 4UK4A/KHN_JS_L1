@@ -124,3 +124,36 @@ button:hover {
     color: #6c757d;
     font-size: 0.9em;
 }
+
+.history-entry .inputs {
+    color: #666;
+    margin: 0 10px;
+}
+
+.drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+    background-color: #e1f5fe;
+    border-color: #2196f3;
+}
+
+#export-history {
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#export-history:hover {
+    background-color: #1976d2;
+}
