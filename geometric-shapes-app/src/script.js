@@ -62,7 +62,7 @@ class ShapeCalculator {
 
     static calculations = [];
 
-    static addCalculation(shapeType, shape, area) {
+    static addCalculation(shapeType, shape, area, description) {  // Add description parameter
         const calculation = {
             id: Date.now(),
             shapeType,
@@ -70,8 +70,8 @@ class ShapeCalculator {
                 ...shape
             },
             area,
+            description: description || '', // Now description is properly passed
             timestamp: new Date().toISOString(),
-            // Add input values based on shape type
             inputs: this.getShapeInputValues(shapeType, shape)
         };
         
@@ -117,7 +117,8 @@ class ShapeCalculator {
             const term = searchTerm.toLowerCase();
             filtered = filtered.filter(calc => 
                 calc.shapeType.toLowerCase().includes(term) ||
-                calc.area.toString().includes(term)
+                calc.area.toString().includes(term) ||
+                (calc.description && calc.description.toLowerCase().includes(term)) // Add description search
             );
         }
 
@@ -178,6 +179,18 @@ class ShapeCalculator {
         const filteredCalculations = calculations.filter(calc => calc.id !== id);
         localStorage.setItem('calculations', JSON.stringify(filteredCalculations));
     }
+
+    static updateDescription(id, newDescription) {
+        const calculations = this.loadCalculations();
+        const calculation = calculations.find(calc => calc.id === id);
+        if (calculation) {
+            calculation.description = newDescription;
+            localStorage.setItem('calculations', JSON.stringify(calculations));
+            return true;
+        }
+        return false;
+    }
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -260,7 +273,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (shape) {
                 const area = ShapeCalculator.calculateArea(shape);
-                const calculation = ShapeCalculator.addCalculation(shapeType, shape, area);
+                const description = form.elements['description'].value.trim();
+                const calculation = ShapeCalculator.addCalculation(shapeType, shape, area, description);
+        
                 
                 // Update display
                 resultDiv.querySelector('.shape-details').textContent = shapeDetails;
@@ -275,11 +290,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             resultDiv.querySelector('.calculated-area').textContent = `Error: ${error.message}`;
         }
+        
     });
 
     // Initialize with rectangle inputs visible
     document.getElementById('rectangle-params').style.display = 'block';
-
+    
     function updateHistory() {
         const filtered = ShapeCalculator.filterAndSortCalculations(
             searchInput.value,
@@ -293,22 +309,57 @@ document.addEventListener('DOMContentLoaded', () => {
             entry.className = 'history-entry';
             entry.innerHTML = `
                 <div class="entry-content">
-                    <span class="shape-type">${calc.shapeType}</span>
-                    <span class="inputs">${calc.inputs}</span>
-                    <span class="area">Area: ${calc.area.toFixed(2)}</span>
-                    <span class="timestamp">${new Date(calc.timestamp).toLocaleString()}</span>
+                <span class="shape-type">${calc.shapeType}</span>
+                <span class="inputs">${calc.inputs}</span>
+                <span class="area">Area: ${calc.area.toFixed(2)}</span>
+                <span class="timestamp">${new Date(calc.timestamp).toLocaleString()}</span>
+                <div class="description" data-id="${calc.id}">
+                    ${calc.description || 'No description'}
                 </div>
-                <button class="delete-entry" data-id="${calc.id}">×</button>
+            </div>
+            <div class="entry-actions">
+                <button class="edit-entry" data-id="${calc.id}" title="Edit description">✎</button>
+                <button class="delete-entry" data-id="${calc.id}" title="Delete entry">×</button>
+            </div>
             `;
     
-            // Add delete handler
-            const deleteBtn = entry.querySelector('.delete-entry');
-            deleteBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to delete this calculation?')) {
-                    ShapeCalculator.deleteCalculation(calc.id);
+            // Add edit handler
+        const editBtn = entry.querySelector('.edit-entry');
+        editBtn.addEventListener('click', (e) => {
+            const descDiv = entry.querySelector('.description');
+            const currentText = calc.description || '';
+            
+            // Create edit mode elements
+            descDiv.innerHTML = `
+                <textarea>${currentText}</textarea>
+                <button class="save-edit">✓</button>
+                <button class="cancel-edit">✕</button>
+            `;
+            
+            entry.classList.add('editing');
+            
+            // Save handler
+            descDiv.querySelector('.save-edit').addEventListener('click', () => {
+                const newDescription = descDiv.querySelector('textarea').value.trim();
+                if (ShapeCalculator.updateDescription(calc.id, newDescription)) {
                     updateHistory();
                 }
             });
+            
+            // Cancel handler
+            descDiv.querySelector('.cancel-edit').addEventListener('click', () => {
+                updateHistory();
+            });
+        });
+
+        // Add delete handler
+        const deleteBtn = entry.querySelector('.delete-entry');
+        deleteBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete this calculation?')) {
+                ShapeCalculator.deleteCalculation(calc.id);
+                updateHistory();
+            }
+        });
     
             historyDiv.appendChild(entry);
         });

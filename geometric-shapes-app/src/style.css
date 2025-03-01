@@ -158,13 +158,6 @@ button:hover {
     background-color: #1976d2;
 }
 
-.history-entry {
-    /* ...existing styles... */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
 .entry-content {
     flex-grow: 1;
     display: flex;
@@ -192,4 +185,68 @@ button:hover {
 
 .delete-entry:hover {
     background-color: #c82333;
+    
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+textarea#description {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.history-entry .description {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+    font-size: 0.9em;
+    grid-column: 1 / -1;
+    width: 40%;
+}
+
+.entry-actions {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.edit-entry {
+    background-color: #ffc107;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background-color 0.2s;
+}
+
+.edit-entry:hover {
+    background-color: #e0a800;
+}
+
+.editing .description {
+    display: flex;
+    gap: 5px;
+}
+
+.editing .description textarea {
+    flex-grow: 1;
+    padding: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9em;
+    min-height: 50px;
 }
