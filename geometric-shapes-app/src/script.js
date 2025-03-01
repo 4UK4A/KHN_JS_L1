@@ -172,6 +172,12 @@ class ShapeCalculator {
             return false;
         }
     }
+
+    static deleteCalculation(id) {
+        const calculations = this.loadCalculations();
+        const filteredCalculations = calculations.filter(calc => calc.id !== id);
+        localStorage.setItem('calculations', JSON.stringify(filteredCalculations));
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -286,11 +292,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const entry = document.createElement('div');
             entry.className = 'history-entry';
             entry.innerHTML = `
-                <span class="shape-type">${calc.shapeType}</span>
-                <span class="inputs">${calc.inputs}</span>
-                <span class="area">Area: ${calc.area.toFixed(2)}</span>
-                <span class="timestamp">${new Date(calc.timestamp).toLocaleString()}</span>
+                <div class="entry-content">
+                    <span class="shape-type">${calc.shapeType}</span>
+                    <span class="inputs">${calc.inputs}</span>
+                    <span class="area">Area: ${calc.area.toFixed(2)}</span>
+                    <span class="timestamp">${new Date(calc.timestamp).toLocaleString()}</span>
+                </div>
+                <button class="delete-entry" data-id="${calc.id}">×</button>
             `;
+    
+            // Add delete handler
+            const deleteBtn = entry.querySelector('.delete-entry');
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to delete this calculation?')) {
+                    ShapeCalculator.deleteCalculation(calc.id);
+                    updateHistory();
+                }
+            });
+    
             historyDiv.appendChild(entry);
         });
     }
